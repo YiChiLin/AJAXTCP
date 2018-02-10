@@ -8,12 +8,36 @@
 <body>
 	<div id="app"></div>
 	<script>
-		const name = "";
+		const name = "Jean Lin";
 		const URL = "http://tutorial.briuin.com/frontend/session2/getsecret.php";
 		
 		new Vue({
 			el: "#app",
-			
+			created: function(){
+				this.sendRequest("POST",{name:name});
+			},
+			methods:{
+				getRequestData(method,token){
+					return method == "POST" ? {token:token} : {params:{token:token}}
+				},
+				getResponse(method, param){
+					return method == "POST" ? this.$http.post(URL,param) : this.$http.get(URL,param);
+				},
+				sendRequest(requestMethod, param){
+					var response = this.getResponse(requestMethod,param);
+					response.then(res=>{
+						var {method,token,message} = res.body;
+						if(token)
+							this.sendRequest(method,this.getRequestData(method,token));
+						console.log(message);
+					}).catch(error=>{
+						var {method,token,message} = error.body;
+						if(token)
+							this.sendRequest(method,this.getRequestData(method,token));
+						console.log(message);
+					})
+				},
+			}
 		});
 	</script>
 </body>
